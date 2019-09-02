@@ -16,3 +16,12 @@ class Player:
 
     def __str__(self):
         """Provides GUI with name of class"""
+
+
+class RandomPlayer(Player):
+    """Will always win with a 50% chance"""
+    def __int__(self, name):
+        super().__init__(name)
+
+
+
