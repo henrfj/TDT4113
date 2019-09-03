@@ -2,6 +2,8 @@ import random
 # from helper_classes import *
 import matplotlib.pyplot
 
+# --------------Different Players--------------
+
 
 class Player:
     """Parent class for the players"""
@@ -9,7 +11,7 @@ class Player:
     def __init__(self, name):
         """initialize a general player"""
         self.name = name
-        self.playerResults = {self: []}
+        self.playerMoves = {self: []}
 
     def choose_action(self, opponent):
         """Return the action of the player"""
@@ -18,9 +20,9 @@ class Player:
     def receive_result(self, opponent, action):
         """Receive results from match"""
         try:
-            self.playerResults[opponent].append(action)
+            self.playerMoves[opponent].append(action.action)
         except KeyError:
-            self.playerResults[opponent] = [action]
+            self.playerMoves[opponent] = [action.action]
 
     def __str__(self):
         """Easier access to name of class through printing"""
@@ -28,7 +30,7 @@ class Player:
 
     def get_results(self):
         """Currently only used for debugging purposes"""
-        return self.playerResults
+        return self.playerMoves
 
 
 class RandomPlayer(Player):
@@ -40,28 +42,69 @@ class RandomPlayer(Player):
 
     def choose_action(self, opponent):
         """Returns a random action"""
-        return Action(random.randint(0, 2))
+        action = Action(random.randint(0, 2))
+        self.playerMoves[self].append(action.action)
+        return action
 
 
 class SequentialPlayer(Player):
     """A stupid player scrolling through all possible actions"""
 
     def __init__(self, name):
-        self.counter = 0
+        self.counter = 2
         super().__init__(name)
 
     def choose_action(self, opponent):
         """returns the next move in its sequence"""
         self.counter = (self.counter + 1) % 3
-        return Action(self.counter)
+        action = Action(self.counter)
+        self.playerMoves[self].append(action.action)
+        return action
 
 
 class MostUsualPlayer(Player):
     """This player counters the most used move of the opponent"""
-    pass
+    def __init__(self, name):
+        """initializes a new most usual player, not being a very smart player"""
+        super().__init__(name)
+
+    def choose_action(self, opponent):
+        """Chooses the counter for opponents most usual move"""
+        move_counter = [0, 0, 0]
+        try:    # It will fail when the opponents key is missing (before first match)
+            for move in self.playerMoves[opponent]:
+                move_counter[move] += 1
+        except KeyError:
+            pass
+
+        if sum(move_counter) != 0:
+            action = Action(find_counter(move_counter.index(max(move_counter))))
+            self.playerMoves[self].append(action.action)
+            return action
+
+        action = Action(random.randint(0, 2))
+        self.playerMoves[self].append(action.action)
+        return action
 
 
-# ----------HELP-CLASSES----------
+class HistorianPlayer(Player):
+    """This player looks for patterns in the opponents history"""
+    def __init__(self, name, depth):
+        """initialize a new historian player, using the superclass to set name"""
+        self.depth = depth
+        super().__init__(name)
+
+    def choose_action(self, opponent):
+        """Chooses action based on pattern recognition, using 'depth' to decide depth of inspection"""
+
+
+# --------------HELP-CLASSES--------------
+
+def find_counter(move):
+    """receives an integer representing a move, returns the counter"""
+    counters = {0: 2, 1: 0, 2: 1}
+    return counters[move]
+
 
 class Action:
     """Helper class to sort out interaction between moves"""
@@ -176,16 +219,19 @@ class ManyMatches:
         matplotlib.pyplot.ylabel("Winning percentage for " + str(self.player1))
         matplotlib.pyplot.show()
 
+        print("player moves for " + str(self.player1) + ": " + str(self.player1.get_results()[self.player1]))
+        print("player moves for " + str(self.player2) + ": " + str(self.player2.get_results()[self.player2]))
+
 
 def main():
     """main function, obviously"""
     p1 = RandomPlayer("RandomDude")
     p2 = SequentialPlayer("SequentialDude")
+    p3 = MostUsualPlayer("MostUsualDude")
+    p4 = HistorianPlayer("HistorianDude", 2)
 
-    tourney = ManyMatches(p1, p2, 1000)
+    tourney = ManyMatches(p1, p3, 1000)
     tourney.tournament()
-
-    print("player results for " + str(p1) + ": "p1.playerResults)
 
 
 main()
