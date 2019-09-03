@@ -11,18 +11,17 @@ class Player:
     def __init__(self, name):
         """initialize a general player"""
         self.name = name
-        self.playerMoves = {self: []}
+        self.player_moves = {self: []}
 
     def choose_action(self, opponent):
         """Return the action of the player"""
-        pass
 
     def receive_result(self, opponent, action):
         """Receive results from match"""
         try:
-            self.playerMoves[opponent].append(action.action)
+            self.player_moves[opponent].append(action.action)
         except KeyError:
-            self.playerMoves[opponent] = [action.action]
+            self.player_moves[opponent] = [action.action]
 
     def __str__(self):
         """Easier access to name of class through printing"""
@@ -30,20 +29,16 @@ class Player:
 
     def get_results(self):
         """Currently only used for debugging purposes"""
-        return self.playerMoves
+        return self.player_moves
 
 
 class RandomPlayer(Player):
     """A player who will always have a 50% chance to win"""
 
-    def __int__(self, name):
-        """initialize new random_player"""
-        super().__init__(name)
-
     def choose_action(self, opponent):
         """Returns a random action"""
         action = Action(random.randint(0, 2))
-        self.playerMoves[self].append(action.action)
+        self.player_moves[self].append(action.action)
         return action
 
 
@@ -58,23 +53,19 @@ class SequentialPlayer(Player):
         """returns the next move in its sequence"""
         self.counter = (self.counter + 1) % 3
         action = Action(self.counter)
-        self.playerMoves[self].append(action.action)
+        self.player_moves[self].append(action.action)
         return action
 
 
 class MostUsualPlayer(Player):
     """This player counters the most used move of the opponent"""
 
-    def __init__(self, name):
-        """initializes a new most usual player, not being a very smart player"""
-        super().__init__(name)
-
     def choose_action(self, opponent):
         """Chooses the counter for opponents most usual move"""
         move_counter = [0, 0, 0]
         # It will fail when the opponents key is missing (before first match)
         try:
-            for move in self.playerMoves[opponent]:
+            for move in self.player_moves[opponent]:
                 move_counter[move] += 1
         except KeyError:
             pass
@@ -84,11 +75,11 @@ class MostUsualPlayer(Player):
                 find_counter(
                     move_counter.index(
                         max(move_counter))))
-            self.playerMoves[self].append(action.action)
+            self.player_moves[self].append(action.action)
             return action
 
         action = Action(random.randint(0, 2))
-        self.playerMoves[self].append(action.action)
+        self.player_moves[self].append(action.action)
         return action
 
 
@@ -103,7 +94,7 @@ class HistorianPlayer(Player):
     def choose_action(self, opponent):
         """Chooses action based on pattern recognition, using 'depth' to decide depth of inspection"""
         try:    # Will fail first move when opponents moves are empty and there is noe key for opponent
-            moves = self.playerMoves[opponent]
+            moves = self.player_moves[opponent]
             prev_move = moves[-1]
         except KeyError:
             moves = []
@@ -116,7 +107,7 @@ class HistorianPlayer(Player):
                 key = ""
                 try:    # Will fail if we try to make a sequence outside index range
                     for j in range(-self.depth + 2, 2, 1):
-                        """sows together the different sequences appearing earlier in the game """
+                        # sows together the different sequences appearing earlier in the game
                         key += str(moves[i + j])
                     try:    # Will fail it there is not already such a key = first time we found this sequence
                         sequences[key] += 1
@@ -128,15 +119,15 @@ class HistorianPlayer(Player):
         print(sequences)
 
         if sequences != {}:
-            """Logic for finding the first key with top values attached"""
+            # Logic for finding the first key with top values attached
             key = self.find_key(sequences, max(sequences.values()))
             action = Action(find_counter(int(key[-1])))
-            self.playerMoves[self].append(action.action)
+            self.player_moves[self].append(action.action)
             return action
 
-        """Or, in case we haven't found any sequences"""
+        # Or, in case we haven't found any sequences
         action = Action(random.randint(0, 2))
-        self.playerMoves[self].append(action.action)
+        self.player_moves[self].append(action.action)
         return action
 
     @staticmethod
@@ -190,32 +181,32 @@ class SingleMatch:
         """initializes a single match"""
         self.player1 = player1
         self.player2 = player2
-        self.actionP1 = None
-        self.actionP2 = None
+        self.action_p1 = None
+        self.action_p2 = None
         self.score = [0, 0]
 
     def execute_game(self):
         """Receives moves from both players, chooses winner and rapports results to both"""
-        self.actionP1 = self.player1.choose_action(self.player2)
-        self.actionP2 = self.player2.choose_action(self.player1)
+        self.action_p1 = self.player1.choose_action(self.player2)
+        self.action_p2 = self.player2.choose_action(self.player1)
 
-        if self.actionP1 == self.actionP2:
+        if self.action_p1 == self.action_p2:
             self.score = [0.5, 0.5]
 
-        elif self.actionP1 > self.actionP2:
+        elif self.action_p1 > self.action_p2:
             self.score = [1, 0]
 
         else:
             self.score = [0, 1]
 
-        self.player1.receive_result(self.player2, self.actionP2)
-        self.player2.receive_result(self.player1, self.actionP1)
+        self.player1.receive_result(self.player2, self.action_p2)
+        self.player2.receive_result(self.player1, self.action_p1)
 
     def __str__(self):
         return str(self.player1) \
-            + ": " + str(self.actionP1) \
+            + ": " + str(self.action_p1) \
             + ".\n" + str(self.player2) \
-            + ": " + str(self.actionP2) + "."
+            + ": " + str(self.action_p2) + "."
 
 
 class ManyMatches:
@@ -279,15 +270,15 @@ class ManyMatches:
 
 def main():
     """main function, obviously"""
-    p1 = RandomPlayer("RandomDude")
-    p2 = SequentialPlayer("SequentialDude")
-    p3 = MostUsualPlayer("MostUsualDude")
+    # p_1 = RandomPlayer("RandomDude")
+    # p_2 = SequentialPlayer("SequentialDude")
+    p_3 = MostUsualPlayer("MostUsualDude")
     depth1 = 4
-    p4 = HistorianPlayer("HistorianDude(" + str(depth1) + ")", depth1)
-    depth2 = 2
-    p5 = HistorianPlayer("HistorianDude(" + str(depth2) + ")", depth2)
+    p_4 = HistorianPlayer("HistorianDude(" + str(depth1) + ")", depth1)
+    # depth2 = 2
+    # p_5 = HistorianPlayer("HistorianDude(" + str(depth2) + ")", depth2)
 
-    tourney = ManyMatches(p4, p5, 1000)
+    tourney = ManyMatches(p_4, p_3, 1000)
     tourney.tournament()
 
 
