@@ -124,4 +124,5 @@ def main():
     tourney = ManyMatches(p1, p2, 1000)
     tourney.tournament()
 
+
 main()
