@@ -64,6 +64,7 @@ class SequentialPlayer(Player):
 
 class MostUsualPlayer(Player):
     """This player counters the most used move of the opponent"""
+
     def __init__(self, name):
         """initializes a new most usual player, not being a very smart player"""
         super().__init__(name)
@@ -71,14 +72,18 @@ class MostUsualPlayer(Player):
     def choose_action(self, opponent):
         """Chooses the counter for opponents most usual move"""
         move_counter = [0, 0, 0]
-        try:    # It will fail when the opponents key is missing (before first match)
+        # It will fail when the opponents key is missing (before first match)
+        try:
             for move in self.playerMoves[opponent]:
                 move_counter[move] += 1
         except KeyError:
             pass
 
         if sum(move_counter) != 0:
-            action = Action(find_counter(move_counter.index(max(move_counter))))
+            action = Action(
+                find_counter(
+                    move_counter.index(
+                        max(move_counter))))
             self.playerMoves[self].append(action.action)
             return action
 
@@ -88,7 +93,8 @@ class MostUsualPlayer(Player):
 
 
 class HistorianPlayer(Player):
-    """This player looks for patterns in the opponents history"""
+    """This player looks for patterns in the opponents history. It is general and can handle 'any depth'"""
+
     def __init__(self, name, depth):
         """initialize a new historian player, using the superclass to set name"""
         self.depth = depth
@@ -96,9 +102,54 @@ class HistorianPlayer(Player):
 
     def choose_action(self, opponent):
         """Chooses action based on pattern recognition, using 'depth' to decide depth of inspection"""
+        try:    # Will fail first move when opponents moves are empty and there is noe key for opponent
+            moves = self.playerMoves[opponent]
+            prev_move = moves[-1]
+        except KeyError:
+            moves = []
+            prev_move = None
+
+        sequences = {}
+
+        for i in range(-2, -len(moves) - 1, -1):
+            if moves[i] == prev_move:
+                key = ""
+                try:    # Will fail if we try to make a sequence outside index range
+                    for j in range(-self.depth + 2, 2, 1):
+                        """sows together the different sequences appearing earlier in the game """
+                        key += str(moves[i + j])
+                    try:    # Will fail it there is not already such a key = first time we found this sequence
+                        sequences[key] += 1
+                    except KeyError:
+                        sequences[key] = 1
+                except IndexError:  # if we cannot find a sequence due to boundary limits
+                    pass
+
+        print(sequences)
+
+        if sequences != {}:
+            """Logic for finding the first key with top values attached"""
+            key = self.find_key(sequences, max(sequences.values()))
+            action = Action(find_counter(int(key[-1])))
+            self.playerMoves[self].append(action.action)
+            return action
+
+        """Or, in case we haven't found any sequences"""
+        action = Action(random.randint(0, 2))
+        self.playerMoves[self].append(action.action)
+        return action
+
+    @staticmethod
+    def find_key(dictionary, value):
+        """returns first key with matching value"""
+        for key in dictionary:
+            if dictionary[key] == value:
+                return key
+        return None
 
 
-# --------------HELP-CLASSES--------------
+# --------------HELP-CLASSES/Functions--------------
+
 
 def find_counter(move):
     """receives an integer representing a move, returns the counter"""
@@ -216,11 +267,14 @@ class ManyMatches:
         matplotlib.pyplot.grid(True)
         matplotlib.pyplot.axhline(y=0.5, linewidth=0.5, color="m")
         matplotlib.pyplot.xlabel("Number of games")
-        matplotlib.pyplot.ylabel("Winning percentage for " + str(self.player1))
+        matplotlib.pyplot.ylabel(
+            "Winning percentage for " + str(self.player1) + " Vs.\n" + str(self.player2))
         matplotlib.pyplot.show()
 
-        print("player moves for " + str(self.player1) + ": " + str(self.player1.get_results()[self.player1]))
-        print("player moves for " + str(self.player2) + ": " + str(self.player2.get_results()[self.player2]))
+        print("player moves for " + str(self.player1) + ": " +
+              str(self.player1.get_results()[self.player1]))
+        print("player moves for " + str(self.player2) + ": " +
+              str(self.player2.get_results()[self.player2]))
 
 
 def main():
@@ -228,9 +282,12 @@ def main():
     p1 = RandomPlayer("RandomDude")
     p2 = SequentialPlayer("SequentialDude")
     p3 = MostUsualPlayer("MostUsualDude")
-    p4 = HistorianPlayer("HistorianDude", 2)
+    depth1 = 4
+    p4 = HistorianPlayer("HistorianDude(" + str(depth1) + ")", depth1)
+    depth2 = 2
+    p5 = HistorianPlayer("HistorianDude(" + str(depth2) + ")", depth2)
 
-    tourney = ManyMatches(p1, p3, 1000)
+    tourney = ManyMatches(p4, p5, 1000)
     tourney.tournament()
 
 
