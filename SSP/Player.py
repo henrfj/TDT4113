@@ -116,7 +116,7 @@ class HistorianPlayer(Player):
                 except IndexError:  # if we cannot find a sequence due to boundary limits
                     pass
 
-        print(sequences)
+        # print(sequences)
 
         if sequences != {}:
             # Logic for finding the first key with top values attached
@@ -224,6 +224,13 @@ class ManyMatches:
         match = SingleMatch(self.player1, self.player2)
         match.execute_game()
         print(match)
+        if match.score[0] == 1:
+            print("--> " + str(self.player1) + " is the winner!")
+        elif match.score[0] == 0.5:
+            print("--> even match")
+        else:
+            print("--> " + str(self.player2) + " is the winner!")
+        print("------------------NEXT MATCH------------------")
         return match.score
 
     def tournament(self):
@@ -260,25 +267,26 @@ class ManyMatches:
         matplotlib.pyplot.xlabel("Number of games")
         matplotlib.pyplot.ylabel(
             "Winning percentage for " + str(self.player1) + " Vs.\n" + str(self.player2))
-        matplotlib.pyplot.show()
 
-        print("player moves for " + str(self.player1) + ": " +
+        print("player moves for " + str(self.player1) + ": \t\t" +
               str(self.player1.get_results()[self.player1]))
-        print("player moves for " + str(self.player2) + ": " +
+        print("player moves for " + str(self.player2) + ": \t\t" +
               str(self.player2.get_results()[self.player2]))
+
+        matplotlib.pyplot.show()
 
 
 def main():
     """main function, obviously"""
     # p_1 = RandomPlayer("RandomDude")
-    # p_2 = SequentialPlayer("SequentialDude")
-    p_3 = MostUsualPlayer("MostUsualDude")
-    depth1 = 4
+    p_2 = SequentialPlayer("SequentialDude")
+    # p_3 = MostUsualPlayer("MostUsualDude")
+    depth1 = 3
     p_4 = HistorianPlayer("HistorianDude(" + str(depth1) + ")", depth1)
     # depth2 = 2
     # p_5 = HistorianPlayer("HistorianDude(" + str(depth2) + ")", depth2)
 
-    tourney = ManyMatches(p_4, p_3, 1000)
+    tourney = ManyMatches(p_4, p_2, 1000)
     tourney.tournament()
 
 
