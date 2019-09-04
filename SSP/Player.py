@@ -1,6 +1,8 @@
+"""Module Docstring"""
 import random
 # from helper_classes import *
 import matplotlib.pyplot
+
 
 # --------------Different Players--------------
 
@@ -84,7 +86,8 @@ class MostUsualPlayer(Player):
 
 
 class HistorianPlayer(Player):
-    """This player looks for patterns in the opponents history. It is general and can handle 'any depth'"""
+    """This player looks for patterns in the opponents history.
+     It is general and can handle 'any depth'"""
 
     def __init__(self, name, depth):
         """initialize a new historian player, using the superclass to set name"""
@@ -92,8 +95,10 @@ class HistorianPlayer(Player):
         super().__init__(name)
 
     def choose_action(self, opponent):
-        """Chooses action based on pattern recognition, using 'depth' to decide depth of inspection"""
-        try:    # Will fail first move when opponents moves are empty and there is noe key for opponent
+        """Chooses action based on pattern recognition,
+         using 'depth' to decide depth of inspection"""
+        try:    # Will fail first move when opponents moves are
+                # empty and there is noe key for opponent
             moves = self.player_moves[opponent]
             prev_move = moves[-1]
         except KeyError:
@@ -107,9 +112,11 @@ class HistorianPlayer(Player):
                 key = ""
                 try:    # Will fail if we try to make a sequence outside index range
                     for j in range(-self.depth + 2, 2, 1):
-                        # sows together the different sequences appearing earlier in the game
+                        # sows together the different sequences appearing
+                        # earlier in the game
                         key += str(moves[i + j])
-                    try:    # Will fail it there is not already such a key = first time we found this sequence
+                    try:    # Will fail it there is not already such a key
+                            # Which is the first time we run this loop
                         sequences[key] += 1
                     except KeyError:
                         sequences[key] = 1
@@ -234,7 +241,8 @@ class ManyMatches:
         return match.score
 
     def tournament(self):
-        """arranges a whole tournament between player 1 and 2 with correct number of matches. Also plots"""
+        """arranges a whole tournament between player 1 and 2
+        with correct number of matches. Also plots"""
 
         x_axis = []
         y_axis = []
