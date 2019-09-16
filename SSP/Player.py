@@ -287,14 +287,14 @@ class ManyMatches:
 def main():
     """main function, obviously"""
     # p_1 = RandomPlayer("RandomDude")
-    p_2 = SequentialPlayer("SequentialDude")
-    # p_3 = MostUsualPlayer("MostUsualDude")
+    # p_2 = SequentialPlayer("SequentialDude")
+    p_3 = MostUsualPlayer("MostUsualDude")
     depth1 = 3
     p_4 = HistorianPlayer("HistorianDude(" + str(depth1) + ")", depth1)
     # depth2 = 2
     # p_5 = HistorianPlayer("HistorianDude(" + str(depth2) + ")", depth2)
 
-    tourney = ManyMatches(p_4, p_2, 1000)
+    tourney = ManyMatches(p_4, p_3, 1000)
     tourney.tournament()
 
 
