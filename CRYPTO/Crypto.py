@@ -7,12 +7,19 @@ import crypto_utils as cu
 class Cipher:
     """Super-class of the different cyphering algorithms"""
 
-    alphabet = list(
-        r" !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~")
+    alphabet = [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*',
+                '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+                'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+                'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a',
+                'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+                'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+                'x', 'y', 'z', '{', '|', '}', '~']
 
     def __init__(self):
         """General init of ciphers"""
-        self.alphabet_size = 95
+        self.alphabet_size = len(self.alphabet)
 
     def encode(self, text, key):
         """dummy"""
@@ -30,6 +37,9 @@ class Cipher:
         """for distributing keys to sender and receiver (used by some algorithms)"""
         return None
 
+    def __str__(self):
+        return "Unnamed algorithm"
+
 
 class Caesar(Cipher):
     """The Caesar algorithm"""
@@ -46,7 +56,9 @@ class Caesar(Cipher):
     def decode(self, text, key):
         """As there is only 95 possible letters, double encoding (where sum of
          keys is 95) will lead to the same clear text result"""
-        return self.encode(text, (self.alphabet_size - key) % self.alphabet_size)
+        return self.encode(
+            text, (self.alphabet_size - key) %
+            self.alphabet_size)
 
     def __str__(self):
         return "Caesar algorithm"
@@ -66,13 +78,33 @@ class Multi(Cipher):
         return encoded_text
 
     def decode(self, text, key):
-        """decoding by a modulo inversed key"""
-        
+        """decoding by a modulo inversed key, we assume he has one from \"generate key\" function"""
+        return self.encode(text, self.generate_keys(key))
 
     def generate_keys(self, key):
         """The receiver needs the modulo inverse key of the sender"""
-        return cu.modular_inverse(key, self.alphabet_size)
+        if cu.modular_inverse(key, self.alphabet_size):
+            return cu.modular_inverse(key, self.alphabet_size)
+        print("This key is invalid, no modulo inverse")
+        return 0
 
+    def __str__(self):
+        return "Multi-algorithm"
+
+
+class Affine(Cipher):
+    """uses algorithm caesar and multi with a tuple of two keys"""
+
+    def encode(self, text, key):
+        """The key is a tuple now, k[0] is caesar key and k[1] is multi-key"""
+        return Caesar().encode(Multi().encode(text, key[1]), key[0])
+
+    def decode(self, text, key):
+        """important to decode in the opposite order of the encoding"""
+        return Multi().decode(Caesar().decode(text, key[0]), key[1])
+
+    def __str__(self):
+        return "Affine algorithm"
 # --------------PERSONS/AGENTS--------------
 
 
@@ -117,18 +149,20 @@ class Hacker(Receiver):
 
 # TESTING GROUNDS -----------------------------------------------
 def tester(text, key, cipher):
-    print("---------------------\n", "Original:", text)
-    key1 = 88
-    sender1 = Sender(key1, cipher)
-    receiver1 = Receiver(key1, cipher)
+    print(
+        "----------------------------------------------------\n" +
+        "Original:",
+        text)
+    sender = Sender(key, cipher)
+    receiver = Receiver(key, cipher)
 
-    encrypt = sender1.operate_cipher(text)
-    print("Sender encrypts using", key1, ":", encrypt)
+    encrypt = sender.operate_cipher(text)
+    print("Sender encrypts using", key, ":", encrypt)
 
-    decrypt = receiver1.operate_cipher(encrypt)
+    decrypt = receiver.operate_cipher(encrypt)
     print("Receiver encrypts using", key, ":", decrypt)
 
-    if cipher.verify(decrypt, encrypt, key):
+    if decrypt == text:
         print(cipher, "works!")
     else:
         print(cipher, "workn'th!")
@@ -136,8 +170,10 @@ def tester(text, key, cipher):
 
 def main():
     """testing and executing"""
-    text = "Holy mother, that is some real yankee zulu shit!"
-    tester(text, 88, Caesar())
+    text = "How are we doing here mister/madam? Is there a problem?"
+    tester(text, 199, Caesar())
+    tester(text, 4, Multi())
+    tester(text, (27, 13), Affine())
 
 
 main()
