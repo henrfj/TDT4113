@@ -33,6 +33,7 @@ class Cipher:
         """for distributing keys to sender and receiver (used by some algorithms)"""
 
     def verify(self, decoded, encoded, key):
+        """returns True if the algorithm works, false otherwise"""
         return decoded == self.decode(
             encoded, key) and encoded == self.encode(decoded, key)
 
@@ -78,10 +79,10 @@ class Multi(Cipher):
         """adding the 'possible keys' attribute"""
         super().__init__()
         self.possible_keys = []
-        for a in range(0, self.alphabet_size):
+        for i in range(0, self.alphabet_size):
             if self.generate_keys(
-                    a) != -1:   # There is no modulo inverse for the key: it is not a possible key
-                self.possible_keys.append(a)
+                    i) != -1:   # There is no modulo inverse for the key: it is not a possible key
+                self.possible_keys.append(i)
 
     def encode(self, text, key):
         """encoding by multiplying a integer key. Needs to be modulo inversible"""
@@ -145,14 +146,14 @@ class Unbreakable(Cipher):
 
     def encode(self, text, key):
         """key is now a word"""
-        t = cu.blocks_from_text(text, 1)
-        k = cu.blocks_from_text(key, 1)
-        while len(k) < len(t):
-            k += k
-        for i in range(len(t)):
-            t[i] = (t[i] - 32 + k[i] - 32) % self.alphabet_size
-            t[i] = self.alphabet[t[i]]
-        return "".join(t)
+        t_block = cu.blocks_from_text(text, 1)
+        k_block = cu.blocks_from_text(key, 1)
+        while len(k_block) < len(t_block):
+            k_block += k_block
+        for i in range(len(t_block)):
+            t_block[i] = (t_block[i] - 32 + k_block[i] - 32) % self.alphabet_size
+            t_block[i] = self.alphabet[t_block[i]]
+        return "".join(t_block)
 
     def decode(self, text, key):
         """key is now the the 'opposite' word of the original encoding key"""
@@ -175,10 +176,10 @@ class RSA(Cipher):
 
     def encode(self, text, key):
         """key here is the public key of the receiver, a tuple (n,e)"""
-        t = cu.blocks_from_text(text, 1)
-        for i in range(len(t)):
-            t[i] = pow(t[i], key[1], key[0])
-        return t
+        t_block = cu.blocks_from_text(text, 1)
+        for i in range(len(t_block)):
+            t_block[i] = pow(t_block[i], key[1], key[0])
+        return t_block
 
     def decode(self, text, key):
         """key here is the receivers own private key, a tuple (n,d).
@@ -234,22 +235,22 @@ class Receiver(Person):
 
     def generate_rsa_keys(self):
         """public key used by senders"""
-        p = cu.generate_random_prime(8)
-        q = cu.generate_random_prime(8)
-        while p == q:
-            q = cu.generate_random_prime(8)
+        p_prime = cu.generate_random_prime(8)
+        q_prime = cu.generate_random_prime(8)
+        while p_prime == q_prime:
+            q_prime = cu.generate_random_prime(8)
 
-        n = p * q
-        _phi = (p - 1) * (q - 1)
+        n_prime = p_prime * q_prime
+        _phi = (p_prime - 1) * (q_prime - 1)
 
-        e = cu.random.randint(3, _phi - 1)
-        d = cu.modular_inverse(e, _phi)
-        while not d:    # It is important that e has a modulo inverse based on _phi
-            e = cu.random.randint(3, _phi - 1)
-            d = cu.modular_inverse(e, _phi)
+        e_prime = cu.random.randint(3, _phi - 1)
+        d_prime = cu.modular_inverse(e_prime, _phi)
+        while not d_prime:    # It is important that e has a modulo inverse based on _phi
+            e_prime = cu.random.randint(3, _phi - 1)
+            d_prime = cu.modular_inverse(e_prime, _phi)
 
-        self.key = (n, d)
-        self.public_key = (n, e)
+        self.key = (n_prime, d_prime)
+        self.public_key = (n_prime, e_prime)
 
 
 class Hacker(Receiver):
