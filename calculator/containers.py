@@ -1,6 +1,6 @@
-"""Helper classes used in 'calculator'"""
-
-__author__ = "Henrik Fjellheim"
+"""
+Helper classes used in 'calculator'
+"""
 
 
 class Container:
@@ -31,6 +31,9 @@ class Container:
         Is different for different subclasses; thus this is a dummy"""
         raise NotImplementedError
 
+    def __str__(self):
+        return str(self.items)
+
 
 class Queue(Container):
     """A standard queue container. FIFO"""
@@ -53,4 +56,4 @@ class Stack(Container):
 
     def pop(self):
         """:return top element of stack after removing it"""
-        return self.items(-1)
+        return self.items.pop(-1)
