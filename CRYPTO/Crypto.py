@@ -1,4 +1,5 @@
-"""Module docstring"""
+"""Crypto module includes several cipher-algorithms
+ as well as actors to execute send-receive operations"""
 import crypto_utils as cu
 
 
@@ -6,7 +7,8 @@ import crypto_utils as cu
 
 
 class Cipher:
-    """Super-class of the different cyphering algorithms"""
+    """Super-class of the different cyphering algorithms;
+    contains dummy-methods for all subclasses"""
 
     alphabet = [' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*',
                 '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5',
@@ -21,7 +23,6 @@ class Cipher:
     def __init__(self):
         """General init of ciphers"""
         self.alphabet_size = len(self.alphabet)
-
 
     def encode(self, text, key):
         """dummy"""
@@ -339,7 +340,7 @@ def rsa_tester(text, rsa):
 def main():
     """testing and executing"""
 
-    text = "the house is big/small, it is hard to tell ~~~"
+    text = "we are the world/we are the children"
 
     tester(text, 199, Caesar())
     tester(text, 4, Multi())
@@ -347,5 +348,6 @@ def main():
     tester(text, "flag", Unbreakable())
     rsa_tester(text, RSA())
 
+    # Set>liste: O(1) access time
 
 main()
