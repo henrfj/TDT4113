@@ -57,3 +57,34 @@ class Stack(Container):
     def pop(self):
         """:return top element of stack after removing it"""
         return self.items.pop(-1)
+
+
+def unit_test():
+    """TESTER FOR THIS UNIT"""
+    queue = Queue()
+    stack = Stack()
+
+    for i in range(17):
+        queue.push(i)
+        stack.push(i)
+
+    print(stack.pop())
+    print(queue.pop())
+
+    print(stack.peek())
+    print(queue.peek())
+
+    print("STACK: ", stack)
+    print("QUEUE: ", queue)
+
+    print("EMPTY?: QUEUE: ", queue.is_empty(),"STACK: ", stack.is_empty())
+
+    while not (queue.is_empty()):
+        queue.pop()
+
+    print("EMPTY?: QUEUE: ", queue.is_empty(), "STACK: ", stack.is_empty())
+
+    # print("POP EMPTY: ", queue.pop())
+
+
+# unit_test()
