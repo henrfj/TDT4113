@@ -3,7 +3,6 @@ Assignment four in TDT4113: 'Calculator'
 """
 
 import math
-import numbers
 import re
 import sys
 from containers import *
@@ -67,6 +66,63 @@ class Calculator:
 
         return stack.pop()
 
+    def output_queue_generator(self, input_list):
+        """
+        Uses the shunting yard algorithm to tak a standard list of calculations
+        and turn it intro a list of RPN, to be calculated
+        :param input_list: a list of numbers, parentheses, operators and functions as its elements
+        """
+        self.output_queue = Queue()
+        operator_stack = Stack()
+
+        for elem in input_list:
+
+            if isinstance(elem, numbers.Number):
+                self.output_queue.push(elem)
+
+            elif isinstance(elem, Function):
+                operator_stack.push(elem)
+
+            elif elem == '(':
+                operator_stack.push(elem)
+
+            elif elem == ')':
+                stack_elem = operator_stack.pop()
+                while stack_elem != '(':
+                    self.output_queue.push(stack_elem)
+                    stack_elem = operator_stack.pop()
+                operator_stack.pop()    # Getting rid of the start parentheses
+
+            elif isinstance(elem, Operator):
+                if not operator_stack.is_empty():
+                    top = operator_stack.peek()
+                    precedence = self.precedence_calculator(top, elem)
+                    while top is not None and precedence:
+                        self.output_queue.push(operator_stack.pop())
+                        if not operator_stack.is_empty():
+                            top = operator_stack.peek()
+                        else:
+                            top = None
+                operator_stack.push(elem)
+
+        while not operator_stack.is_empty():
+            self.output_queue.push(operator_stack.pop())
+
+
+
+
+    @staticmethod
+    def precedence_calculator(top, elem):
+        """
+        :param top: top element of stack, can be function, operator, number
+        :param elem: is a operator with a strength
+        :return: if top has precedence over elem
+        """
+        if isinstance(top, numbers.Number) or top == '(' or isinstance(top, Function):
+            return False
+        if isinstance(top, Operator):
+            return top.strength >= elem.strength
+
 
 def unit_test():
     p = 1
@@ -87,6 +143,13 @@ def unit_test():
             calc.output_queue.push(calc.operators["PLUSS"])
             calc.output_queue.push(calc.functions["EXP"])
             print("ANSWER IS: ", calc.evaluate_output_queue())
+        if p == 3:
+            print("NORMAL --> RPN TEST")
+            calc = Calculator()
+            norm = [numpy.exp, '(', 1, numpy.add, 2, numpy.multiply, 3, ')']
+            calc.output_queue_generator(norm)
+
+            print("NORMAL: ", norm, "RPN: ", calc.output_queue)
 
 
 unit_test()
