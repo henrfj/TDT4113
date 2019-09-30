@@ -35,18 +35,9 @@ class Calculator:
             'GANGE': Operator(numpy.multiply, strength=1),
         }
 
-        self.constants = {
-            'PI': math.pi,
-            'TAU': math.tau,
-            'E': math.e
-        }
-
-        # Parse_text fills this queue with RPN,
+        # Parse text to fills this queue with RPN,
         # the evaluate_output_queue evaluates it to find answer
         self.output_queue = Queue()
-
-        # To turn on/off debug for functions and operators.execute
-        # self.debug = debug
 
     def evaluate_output_queue(self):
         """Evaluates the RPN in the queue"""
@@ -78,22 +69,26 @@ class Calculator:
         for elem in input_list:
 
             if isinstance(elem, numbers.Number):
+                # print("Number:", elem)
                 self.output_queue.push(elem)
 
             elif isinstance(elem, Function):
+                # print("Function:", elem)
                 operator_stack.push(elem)
 
             elif elem == '(':
+                # print("Start parentheses: ", elem)
                 operator_stack.push(elem)
 
             elif elem == ')':
+                # print("End parentheses: ", elem)
                 stack_elem = operator_stack.pop()
                 while stack_elem != '(':
                     self.output_queue.push(stack_elem)
                     stack_elem = operator_stack.pop()
-                operator_stack.pop()    # Getting rid of the start parentheses
 
             elif isinstance(elem, Operator):
+                # print("Operator: ", elem)
                 if not operator_stack.is_empty():
                     top = operator_stack.peek()
                     precedence = self.precedence_calculator(top, elem)
@@ -106,8 +101,16 @@ class Calculator:
                 operator_stack.push(elem)
 
         while not operator_stack.is_empty():
-            self.output_queue.push(operator_stack.pop())
+            item = operator_stack.pop()
+            self.output_queue.push(item)
 
+    def parse_string_to_list(self, input_string):
+        """
+        Parses string to be used in 'output_queue_generator'
+        :param input_string: a user-written string to be calculated; assumed correct format
+        :return: a string of numbers, functions and operators in a 'normal' syntax
+        """
+        
 
 
 
@@ -118,7 +121,11 @@ class Calculator:
         :param elem: is a operator with a strength
         :return: if top has precedence over elem
         """
-        if isinstance(top, numbers.Number) or top == '(' or isinstance(top, Function):
+        if isinstance(
+                top,
+                numbers.Number) or top == '(' or isinstance(
+                top,
+                Function):
             return False
         if isinstance(top, Operator):
             return top.strength >= elem.strength
@@ -127,12 +134,18 @@ class Calculator:
 def unit_test():
     p = 1
     while p != 0:
-        p = int(input("CHOOSE TESTING: "))
+        print("--------------------------------------")
+        print("0:EXIT\n1:BASICS\n2:RPN READER\n3:RPN GENERATOR\n4:Combined 2 and 3")
+        p = int(input("--------------------------------------\nCHOOSE TESTING: "))
         if p == 1:
             print("BASIC CALCULATOR OPERATION")
             calc = Calculator()
-            print(calc.functions["EXP"].execute(calc.operators["PLUSS"].execute(1, calc.operators["GANGE"].execute(2, 3))))
-            print("---------------------------")
+            print(
+                calc.functions["EXP"].execute(
+                    calc.operators["PLUSS"].execute(
+                        1, calc.operators["GANGE"].execute(
+                            2, 3))))
+
         if p == 2:
             print("RPN READER TEST")
             calc = Calculator()
@@ -142,15 +155,67 @@ def unit_test():
             calc.output_queue.push(calc.operators["GANGE"])
             calc.output_queue.push(calc.operators["PLUSS"])
             calc.output_queue.push(calc.functions["EXP"])
+            rpn_printer(calc.output_queue)
             print("ANSWER IS: ", calc.evaluate_output_queue())
         if p == 3:
             print("NORMAL --> RPN TEST")
             calc = Calculator()
-            norm = [numpy.exp, '(', 1, numpy.add, 2, numpy.multiply, 3, ')']
+            norm = [
+                calc.functions["EXP"],
+                '(',
+                1,
+                calc.operators["PLUSS"],
+                2,
+                calc.operators["GANGE"],
+                3,
+                ')']
+            norm_printer(norm)
             calc.output_queue_generator(norm)
+            rpn_printer(calc.output_queue)
+            print()
+            norm2 = [2, calc.operators["GANGE"], 3, calc.operators["PLUSS"], 1]
+            norm_printer(norm2)
+            calc.output_queue_generator(norm2)
+            rpn_printer(calc.output_queue)
 
-            print("NORMAL: ", norm, "RPN: ", calc.output_queue)
+        if p == 4:
+            print("NORMAL --> RPN --> EVALUATED")
+            calc = Calculator()
+            norm = [
+                calc.functions["EXP"],
+                '(',
+                1,
+                calc.operators["PLUSS"],
+                2,
+                calc.operators["GANGE"],
+                3,
+                ')']
+            norm_printer(norm)
+            calc.output_queue_generator(norm)
+            rpn_printer(calc.output_queue)
+            print("ANSWER IS: ", calc.evaluate_output_queue())
+
+
+def rpn_printer(rpn):
+    """For debugging"""
+    print("RPN: [ ", end='')
+    s = rpn.size()
+    l = rpn.items
+    for i in range(s):
+        if i != s - 1:
+            print(l[i], ", ", end='')
+        else:
+            print(l[i], "]")
+
+
+def norm_printer(norm):
+    """For debugging"""
+    print("Normal: [ ", end='')
+    for element in norm:
+        if element != norm[-1]:
+            print(element, ", ", end='')
+        else:
+            print(element, "]")
 
 
 unit_test()
-

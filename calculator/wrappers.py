@@ -13,7 +13,7 @@ class Function:
     def __init__(self, func):
         self.func = func
 
-    def execute(self, element, debug=True):
+    def execute(self, element, debug=False):
 
         # Check type
         if not isinstance(element, numbers.Number):
@@ -28,6 +28,9 @@ class Function:
 
         return result
 
+    def __str__(self):
+        return self.func.__name__
+
 
 class Operator:
     """
@@ -38,7 +41,7 @@ class Operator:
         self.operation = operation
         self.strength = strength
 
-    def execute(self, first_elem, second_elem, debug=True):
+    def execute(self, first_elem, second_elem, debug=False):
 
         # Check type
         if not isinstance(first_elem, numbers.Number):
@@ -54,6 +57,9 @@ class Operator:
             print(f'Operation: {first_elem} ' + self.operation.__name__ + f' {second_elem} = {result}')
 
         return result
+
+    def __str__(self):
+        return self.operation.__name__
 
 
 def unit_test():
@@ -80,6 +86,8 @@ def unit_test():
     print(div_op.execute(10, 2))
     sub_op = Operator(numpy.subtract, 0)
     print(sub_op.execute(2, 1))
+
+
 
 
 # unit_test()
