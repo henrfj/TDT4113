@@ -8,7 +8,6 @@ import sys
 from containers import *
 from wrappers import *
 
-
 __author__ = "Henrik Fjellheim"
 
 
@@ -38,6 +37,9 @@ class Calculator:
         # Parse text to fills this queue with RPN,
         # the evaluate_output_queue evaluates it to find answer
         self.output_queue = Queue()
+
+    def calculate(self):
+        """The running of the calculator"""
 
     def evaluate_output_queue(self):
         """Evaluates the RPN in the queue"""
@@ -110,7 +112,47 @@ class Calculator:
         :param input_string: a user-written string to be calculated; assumed correct format
         :return: a string of numbers, functions and operators in a 'normal' syntax
         """
-        
+
+        # Make the string uppercase with no spaces,
+        # ready for regex; re methods
+        input_string = input_string.replace(" ", "").upper()
+
+        regex_list = (
+            '|'.join(
+                self.functions.keys()),
+            '|'.join(
+                self.operators.keys()),
+            r'\(',
+            r'\)',
+            r'\d+\.\d+',        # Positive float
+            r'-\d+\.\d+',       # Negative float
+            r'\d+',             # Positive integer
+            r'-\d+')            # Negative integer
+
+        regex = '|'.join(regex_list)
+
+
+        # re.findall returns a list containing all matches
+        matches = re.findall(regex, input_string)
+        result = []
+        for match in matches:
+            # print(match)
+            if match in self.functions.keys():
+                result.append(self.functions[match])
+
+            elif match in self.operators.keys():
+                result.append(self.operators[match])
+
+            elif match == ')' or match == '(':
+                result.append(match)
+
+            else:   # It's a number or trash
+                try:
+                    result.append(float(match))
+                except ValueError:
+                    pass
+
+        return result
 
 
 
@@ -122,8 +164,8 @@ class Calculator:
         :return: if top has precedence over elem
         """
         if isinstance(
-                top,
-                numbers.Number) or top == '(' or isinstance(
+            top,
+            numbers.Number) or top == '(' or isinstance(
                 top,
                 Function):
             return False
@@ -131,12 +173,14 @@ class Calculator:
             return top.strength >= elem.strength
 
 
+
 def unit_test():
     p = 1
     while p != 0:
         print("--------------------------------------")
-        print("0:EXIT\n1:BASICS\n2:RPN READER\n3:RPN GENERATOR\n4:Combined 2 and 3")
-        p = int(input("--------------------------------------\nCHOOSE TESTING: "))
+        print(
+            "0:EXIT\n1:BASICS\n2:RPN READER\n3:RPN GENERATOR\n4:Combined 2 and 3\n5:REGEX\n6:CALCULATE")
+        p = int(input("--------------------------------------\nCHOOSE FROM THE LIST ABOVE: "))
         if p == 1:
             print("BASIC CALCULATOR OPERATION")
             calc = Calculator()
@@ -195,6 +239,22 @@ def unit_test():
             rpn_printer(calc.output_queue)
             print("ANSWER IS: ", calc.evaluate_output_queue())
 
+        if p == 5:
+            print("REGEX")
+            calc = Calculator()
+            s1 = "EXP(3.14 pluss -22 gange -3.33)"
+            norm1 = calc.parse_string_to_list(s1)
+            print(s1, "==> ")
+            norm_printer(norm1)
+
+            s2 = "((15 DELE (7 MINUS (1 PLUSS 1))) GANGE 3) MINUS (2 PLUSS (1 PLUSS 1))"
+            norm2 = calc.parse_string_to_list(s2)
+            print(s2, "==> ")
+            norm_printer(norm2)
+
+        if p == 6:
+            print("Combined functionality")
+
 
 def rpn_printer(rpn):
     """For debugging"""
@@ -211,11 +271,11 @@ def rpn_printer(rpn):
 def norm_printer(norm):
     """For debugging"""
     print("Normal: [ ", end='')
-    for element in norm:
-        if element != norm[-1]:
-            print(element, ", ", end='')
+    for i in range(len(norm)):
+        if i != len(norm) - 1:
+            print(norm[i], ", ", end='')
         else:
-            print(element, "]")
+            print(norm[i], "]")
 
 
 unit_test()
