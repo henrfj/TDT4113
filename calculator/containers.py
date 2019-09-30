@@ -76,10 +76,9 @@ def unit_test():
 
     print("STACK: ", stack)
     print("QUEUE: ", queue)
+    print("EMPTY?: QUEUE: ", queue.is_empty(), "STACK: ", stack.is_empty())
 
-    print("EMPTY?: QUEUE: ", queue.is_empty(),"STACK: ", stack.is_empty())
-
-    while not (queue.is_empty()):
+    while not queue.is_empty():
         queue.pop()
 
     print("EMPTY?: QUEUE: ", queue.is_empty(), "STACK: ", stack.is_empty())

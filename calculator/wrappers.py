@@ -14,7 +14,8 @@ class Function:
         self.func = func
 
     def execute(self, element, debug=False):
-
+        """Checks if the input is valid
+         for the function and executes"""
         # Check type
         if not isinstance(element, numbers.Number):
             raise TypeError(f'Cannot execute function as "{element}" is not a number')
@@ -42,7 +43,8 @@ class Operator:
         self.strength = strength
 
     def execute(self, first_elem, second_elem, debug=False):
-
+        """Checks if both inputs are valid
+         for the operator and executes"""
         # Check type
         if not isinstance(first_elem, numbers.Number):
             raise TypeError(f'Cannot execute {self.operation} as {first_elem} is not a number')
@@ -54,23 +56,26 @@ class Operator:
 
         # Report
         if debug:
-            print(f'Operation: {first_elem} ' + self.operation.__name__ + f' {second_elem} = {result}')
+            print(f'Operation: {first_elem} '
+                  + self.operation.__name__ + f' {second_elem} = {result}')
 
         return result
 
     def __str__(self):
+        """Readable for printing, used for debug"""
         return self.operation.__name__
 
 
 def unit_test():
+    """Testing this module"""
     exp = Function(numpy.exp)
     sin = Function(numpy.sin)
     print(exp.execute(sin.execute(4)))
     print(exp.execute(sin.execute(0)))
     try:
         print(exp.execute(sin.execute("hei")))
-    except TypeError as e:
-        print("ERROR", e)
+    except TypeError as error:
+        print("ERROR", error)
 
     add_op = Operator(numpy.add, 0)
     multiply_op = Operator(numpy.multiply, 1)
@@ -78,17 +83,11 @@ def unit_test():
 
     try:
         print(add_op.execute("poop", "poop"))
-    except TypeError as e:
-        print("ERROR", e)
+    except TypeError as error:
+        print("ERROR", error)
 
     print("ORDER TEST")
     div_op = Operator(numpy.divide, 1)
     print(div_op.execute(10, 2))
     sub_op = Operator(numpy.subtract, 0)
     print(sub_op.execute(2, 1))
-
-
-
-
-# unit_test()
-

@@ -2,11 +2,12 @@
 Assignment four in TDT4113: 'Calculator'
 """
 
-import math
 import re
-import sys
-from containers import *
-from wrappers import *
+import numbers
+import numpy
+from containers import Queue, Stack
+from wrappers import Function, Operator
+
 
 __author__ = "Henrik Fjellheim"
 
@@ -44,12 +45,15 @@ class Calculator:
               "Exit by pressing 'ENTER' without providing input\n" +
               "All operators are written in norwegian!\n" +
               "(E.g. '+' is written 'pluss')")
-        eq = " "
-        while eq != "":
-            eq = input(">>> ")
-            self.output_queue_generator(self.parse_string_to_list(eq))
-            answer = self.evaluate_output_queue()
-            print(">>>", answer)
+        equation = " "
+        while equation != "":
+            equation = input(">>> ")
+            try:
+                self.output_queue_generator(self.parse_string_to_list(equation))
+                answer = self.evaluate_output_queue()
+                print(">>>", answer)
+            except IndexError:
+                pass
 
     def evaluate_output_queue(self):
         """Evaluates the RPN in the queue"""
@@ -62,7 +66,6 @@ class Calculator:
                 _input = stack.pop()
                 stack.push(elem.execute(_input))
             elif isinstance(elem, Operator):
-                # TODO Test if these are popped in the right order
                 _input_1 = stack.pop()
                 _input_2 = stack.pop()
                 stack.push(elem.execute(_input_1, _input_2))
@@ -146,7 +149,7 @@ class Calculator:
             elif match in self.operators.keys():
                 result.append(self.operators[match])
 
-            elif match == ')' or match == '(':
+            elif match in ('(', ')'):
                 result.append(match)
 
             else:   # It's a number or trash
@@ -164,23 +167,23 @@ class Calculator:
         :param elem: is a operator with a strength
         :return: if top has precedence over elem
         """
-        if isinstance(top, numbers.Number) or isinstance(top, Function):
-            return False
-        if top == '(' or top == ')':
+
+        if isinstance(top, numbers.Number) or isinstance(top, Function) or top in ('(', ')'):
             return False
         if isinstance(top, Operator):
             return top.strength > elem.strength
 
 
 def unit_test():
-    p = 1
-    while p != 0:
+    """Tester where p is just a 'chooser object'"""
+    choice = 1
+    while choice != 0:
         print("--------------------------------------")
-        print(
-            "0:EXIT\n1:BASICS\n2:RPN READER\n3:RPN GENERATOR\n4:Combined 2 and 3\n5:REGEX\n6:CALCULATE")
-        p = int(
+        print("0:EXIT\n1:BASICS\n2:RPN READER")
+        print("3:RPN GENERATOR\n4:Combined 2 and 3\n5:REGEX\n6:CALCULATE")
+        choice = int(
             input("--------------------------------------\nCHOOSE FROM THE LIST ABOVE: "))
-        if p == 1:
+        if choice == 1:
             print("BASIC CALCULATOR OPERATION")
             calc = Calculator()
             print(
@@ -189,7 +192,7 @@ def unit_test():
                         1, calc.operators["GANGE"].execute(
                             2, 3))))
 
-        if p == 2:
+        elif choice == 2:
             print("RPN READER TEST")
             calc = Calculator()
             calc.output_queue.push(1)
@@ -200,7 +203,7 @@ def unit_test():
             calc.output_queue.push(calc.functions["EXP"])
             rpn_printer(calc.output_queue)
             print("ANSWER IS: ", calc.evaluate_output_queue())
-        if p == 3:
+        elif choice == 3:
             print("NORMAL --> RPN TEST")
             calc = Calculator()
             norm = [
@@ -221,12 +224,20 @@ def unit_test():
             calc.output_queue_generator(norm2)
             rpn_printer(calc.output_queue)
             print()
-            norm3 = [calc.functions["EXP"], '(', 2, calc.operators['GANGE'], 2, calc.operators['GANGE'], 2, ')']
+            norm3 = [
+                calc.functions["EXP"],
+                '(',
+                2,
+                calc.operators['GANGE'],
+                2,
+                calc.operators['GANGE'],
+                2,
+                ')']
             norm_printer(norm3)
             calc.output_queue_generator(norm3)
             rpn_printer(calc.output_queue)
 
-        if p == 4:
+        elif choice == 4:
             print("NORMAL --> RPN --> EVALUATED")
             calc = Calculator()
             norm = [
@@ -243,21 +254,21 @@ def unit_test():
             rpn_printer(calc.output_queue)
             print("ANSWER IS: ", calc.evaluate_output_queue())
 
-        if p == 5:
+        elif choice == 5:
             print("REGEX")
             calc = Calculator()
-            s1 = "EXP(3.14 pluss -22 gange -3.33)"
-            norm1 = calc.parse_string_to_list(s1)
-            print(s1, "==> ")
+            string1 = "EXP(3.14 pluss -22 gange -3.33)"
+            norm1 = calc.parse_string_to_list(string1)
+            print(string1, "==> ")
             norm_printer(norm1)
 
-            s2 = "((15 DELE (7 MINUS (1 PLUSS 1))) GANGE 3) MINUS (2 PLUSS (1 PLUSS 1))"
-            norm2 = calc.parse_string_to_list(s2)
-            print(s2, "==> ")
+            string2 = "((15 DELE (7 MINUS (1 PLUSS 1))) GANGE 3) MINUS (2 PLUSS (1 PLUSS 1))"
+            norm2 = calc.parse_string_to_list(string2)
+            print(string2, "==> ")
             norm_printer(norm2)
 
-        if p == 6:
-            print("Combined functionality")
+        elif choice == 6:
+            print("--------------------------------------")
             calc = Calculator()
             calc.calculate()
             exit()
@@ -266,23 +277,23 @@ def unit_test():
 def rpn_printer(rpn):
     """For debugging"""
     print("RPN: [ ", end='')
-    s = rpn.size()
-    l = rpn.items
-    for i in range(s):
-        if i != s - 1:
-            print(l[i], ", ", end='')
+    size = rpn.size()
+    _list = rpn.items
+    for i in range(size):
+        if i != size - 1:
+            print(_list[i], ", ", end='')
         else:
-            print(l[i], "]")
+            print(_list[i], "]")
 
 
 def norm_printer(norm):
     """For debugging"""
     print("Normal: [ ", end='')
-    for i in range(len(norm)):
+    for i, elem in enumerate(norm):
         if i != len(norm) - 1:
-            print(norm[i], ", ", end='')
+            print(elem, ", ", end='')
         else:
-            print(norm[i], "]")
+            print(elem, "]")
 
 
 unit_test()
