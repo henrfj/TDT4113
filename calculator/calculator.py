@@ -1,5 +1,8 @@
 """
 Assignment four in TDT4113: 'Calculator'
+After talking to studass i learned:
+- run pylint from terminal to get score
+- I had originally done minus operation in the wrong order
 """
 
 import re
@@ -10,6 +13,8 @@ from wrappers import Function, Operator
 
 
 __author__ = "Henrik Fjellheim"
+
+
 
 
 class Calculator:
@@ -68,7 +73,7 @@ class Calculator:
             elif isinstance(elem, Operator):
                 _input_1 = stack.pop()
                 _input_2 = stack.pop()
-                stack.push(elem.execute(_input_1, _input_2))
+                stack.push(elem.execute(_input_2, _input_1))
 
         return stack.pop()
 
@@ -168,7 +173,7 @@ class Calculator:
         :return: if top has precedence over elem
         """
 
-        if isinstance(top, numbers.Number) or isinstance(top, Function) or top in ('(', ')'):
+        if isinstance(top, (numbers.Number, Function)) or top in ('(', ')'):
             return False
         if isinstance(top, Operator):
             return top.strength > elem.strength
