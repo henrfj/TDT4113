@@ -40,6 +40,16 @@ class Calculator:
 
     def calculate(self):
         """The running of the calculator"""
+        print("Welcome to 'COOLCULATOR'.\n" +
+              "Exit by pressing 'ENTER' without providing input\n" +
+              "All operators are written in norwegian!\n" +
+              "(E.g. '+' is written 'pluss')")
+        eq = " "
+        while eq != "":
+            eq = input(">>> ")
+            self.output_queue_generator(self.parse_string_to_list(eq))
+            answer = self.evaluate_output_queue()
+            print(">>>", answer)
 
     def evaluate_output_queue(self):
         """Evaluates the RPN in the queue"""
@@ -71,30 +81,24 @@ class Calculator:
         for elem in input_list:
 
             if isinstance(elem, numbers.Number):
-                # print("Number:", elem)
                 self.output_queue.push(elem)
 
             elif isinstance(elem, Function):
-                # print("Function:", elem)
                 operator_stack.push(elem)
 
             elif elem == '(':
-                # print("Start parentheses: ", elem)
                 operator_stack.push(elem)
 
             elif elem == ')':
-                # print("End parentheses: ", elem)
                 stack_elem = operator_stack.pop()
                 while stack_elem != '(':
                     self.output_queue.push(stack_elem)
                     stack_elem = operator_stack.pop()
 
             elif isinstance(elem, Operator):
-                # print("Operator: ", elem)
                 if not operator_stack.is_empty():
                     top = operator_stack.peek()
-                    precedence = self.precedence_calculator(top, elem)
-                    while top is not None and precedence:
+                    while (top is not None) and self.precedence_calculator(top, elem):
                         self.output_queue.push(operator_stack.pop())
                         if not operator_stack.is_empty():
                             top = operator_stack.peek()
@@ -131,7 +135,6 @@ class Calculator:
 
         regex = '|'.join(regex_list)
 
-
         # re.findall returns a list containing all matches
         matches = re.findall(regex, input_string)
         result = []
@@ -154,8 +157,6 @@ class Calculator:
 
         return result
 
-
-
     @staticmethod
     def precedence_calculator(top, elem):
         """
@@ -163,15 +164,12 @@ class Calculator:
         :param elem: is a operator with a strength
         :return: if top has precedence over elem
         """
-        if isinstance(
-            top,
-            numbers.Number) or top == '(' or isinstance(
-                top,
-                Function):
+        if isinstance(top, numbers.Number) or isinstance(top, Function):
+            return False
+        if top == '(' or top == ')':
             return False
         if isinstance(top, Operator):
-            return top.strength >= elem.strength
-
+            return top.strength > elem.strength
 
 
 def unit_test():
@@ -180,7 +178,8 @@ def unit_test():
         print("--------------------------------------")
         print(
             "0:EXIT\n1:BASICS\n2:RPN READER\n3:RPN GENERATOR\n4:Combined 2 and 3\n5:REGEX\n6:CALCULATE")
-        p = int(input("--------------------------------------\nCHOOSE FROM THE LIST ABOVE: "))
+        p = int(
+            input("--------------------------------------\nCHOOSE FROM THE LIST ABOVE: "))
         if p == 1:
             print("BASIC CALCULATOR OPERATION")
             calc = Calculator()
@@ -221,6 +220,11 @@ def unit_test():
             norm_printer(norm2)
             calc.output_queue_generator(norm2)
             rpn_printer(calc.output_queue)
+            print()
+            norm3 = [calc.functions["EXP"], '(', 2, calc.operators['GANGE'], 2, calc.operators['GANGE'], 2, ')']
+            norm_printer(norm3)
+            calc.output_queue_generator(norm3)
+            rpn_printer(calc.output_queue)
 
         if p == 4:
             print("NORMAL --> RPN --> EVALUATED")
@@ -254,6 +258,9 @@ def unit_test():
 
         if p == 6:
             print("Combined functionality")
+            calc = Calculator()
+            calc.calculate()
+            exit()
 
 
 def rpn_printer(rpn):
